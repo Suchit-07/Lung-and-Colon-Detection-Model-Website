@@ -1,12 +1,43 @@
-import Link from "next/link"
-import { Lock, User, ArrowRight } from "lucide-react"
+"use client";
+import { useState } from "react";
+import { auth } from "@/firebase"; // Adjust path to your firebase config
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Lock, User, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const router = useRouter();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setError("Please fill out both fields.");
+      return;
+    }
+
+    try {
+      // Authenticate with Firebase
+      await signInWithEmailAndPassword(auth, email, password);
+      console.log("Login successful!");
+      router.push("/detect"); // Redirect user to dashboard
+    } catch (err) {
+      console.error("Login Error:", err.message);
+      setError("Invalid credentials. Please try again.");
+    }
+  };
+
+  
+  
+
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       <nav className="w-full p-4 flex justify-between items-center">
         <Link href="/" className="text-lg font-medium hover:text-gray-300 transition-colors">
-          Lung/Colon Cancer Detection model
+          Lung/Colon Cancer Detection Model
         </Link>
         <div className="flex items-center gap-6">
           <Link href="/features" className="hover:text-gray-300 transition-colors">
@@ -15,7 +46,7 @@ export default function LoginPage() {
           <Link href="/contact" className="hover:text-gray-300 transition-colors">
             Contact
           </Link>
-          <Link href="/login" className="hover:text-gray-300 transition-colors font-medium" aria-current="page">
+          <Link href="/login" className="hover:text-gray-300 transition-colors font-medium">
             Login/Sign Up
           </Link>
         </div>
@@ -31,16 +62,7 @@ export default function LoginPage() {
           </div>
 
           <div className="border border-gray-800 rounded-lg p-8">
-            <div className="flex space-x-4 mb-6">
-              <button className="flex-1 bg-white text-black py-3 rounded-md font-medium">
-                Log In
-              </button>
-              <Link href="/signup" className="flex-1 border border-gray-800 text-center py-3 rounded-md hover:border-white transition-colors">
-                Sign Up
-              </Link>
-            </div>
-
-            <form className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-400 mb-2">
                   Email Address
@@ -52,19 +74,19 @@ export default function LoginPage() {
                   <input
                     type="email"
                     id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="w-full bg-gray-900 border border-gray-800 rounded-lg pl-10 p-3 text-white focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                     placeholder="your@email.com"
+                    required
                   />
                 </div>
               </div>
-              
+
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-400">
-                    Password
-                  </label>
-                  
-                </div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-400 mb-2">
+                  Password
+                </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Lock className="h-5 w-5 text-gray-500" />
@@ -72,23 +94,18 @@ export default function LoginPage() {
                   <input
                     type="password"
                     id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="w-full bg-gray-900 border border-gray-800 rounded-lg pl-10 p-3 text-white focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                     placeholder="••••••••"
+                    required
                   />
                 </div>
               </div>
 
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-white bg-gray-900 border-gray-800 rounded focus:ring-white"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-400">
-                  Remember me for 30 days
-                </label>
-              </div>
+              {error && (
+                <p className="text-red-500 text-sm mt-2">{error}</p>
+              )}
 
               <button
                 type="submit"
@@ -124,5 +141,5 @@ export default function LoginPage() {
         *Results may be inaccurate. Please contact a medical professional for a complete diagnosis.
       </footer>
     </div>
-  )
+  );
 }
