@@ -9,8 +9,21 @@ export default function DetectPage() {
   const [previewImage, setPreviewImage] = useState(null)
   const [isDragging, setIsDragging] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file && (file.type === "image/jpeg" || file.type === "image/png")) {
+      setSelectedFile(file); // Save the actual file for API
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  /*const handleFileChange = (e) => {
     const file = e.target.files[0]
     if (file && (file.type === "image/jpeg" || file.type === "image/png")) {
       const reader = new FileReader()
@@ -19,7 +32,7 @@ export default function DetectPage() {
       }
       reader.readAsDataURL(file)
     }
-  }
+  }*/
 
   const handleDragOver = (e) => {
     e.preventDefault()
@@ -64,8 +77,36 @@ export default function DetectPage() {
   const handleRemoveImage = () => {
     setPreviewImage(null)
   }
+  const handleAnalyze = async () => {
+    if (!selectedFile) return;
+  
+    setIsAnalyzing(true);
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+  
+    try {
+      const response = await fetch("http://127.0.0.1:8000/predict/", {
+        method: "POST",
+        body: formData,
+      });
+  
+      const data = await response.json();
+      console.log("Prediction result:", data);
+  
+      // Redirect or store prediction for use in /results
+      localStorage.setItem("prediction", JSON.stringify(data));
+      window.location.href = "/results";
+    } catch (error) {
+      console.error("Prediction failed:", error);
+      alert("Something went wrong during prediction.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+  
 
-  const handleAnalyze = () => {
+  /*const handleAnalyze = () => {
+
     setIsAnalyzing(true)
     // Simulate analysis process
     setTimeout(() => {
@@ -73,7 +114,7 @@ export default function DetectPage() {
       // In a real app, you would redirect to results page or show results here
       window.location.href = "/results"
     }, 3000)
-  }
+  }*/
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">

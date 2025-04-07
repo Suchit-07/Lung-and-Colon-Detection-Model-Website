@@ -1,46 +1,59 @@
-# backend/main.py
+import torch
+import torch.nn as nn
+import torchvision.transforms as transforms
 from fastapi import FastAPI, File, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
-from .model import load_model, preprocess_image, predict as predict_image
-import shutil
-import os
+from PIL import Image
+from .model import load_model
+import io
 
+# Initialize FastAPI
 app = FastAPI()
-os.makedirs("uploads", exist_ok=True)
-
-# CORS for frontend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Or replace with your frontend domain in production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Load model once
-MODEL_PATH = r"C:\Users\bappa\Downloads\Lung-and-Colon-Detection-Model-Website\backend\cancer_detection_model (1).pth"  # or the exact name of your file
+#copy file path of attached pth file
+MODEL_PATH = 'PUT MODEL PATH HERE'
 model = load_model(MODEL_PATH)
 
-@app.get("/")
-def root():
-    return {"message": "Cancer Detection API"}
+# Define image transformations (must match training preprocessing)
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),  # Resize to (224, 224), or whatever size your model expects
+    transforms.ToTensor(),  # Convert the image to a tensor
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize if needed (for pretrained models)
+])
 
-@app.post("/predict")
-async def predict_endpoint(file: UploadFile = File(...)):
-    file_path = f"uploads/{file.filename}"
 
-    # Save image to disk
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+# API endpoint to process image
+@app.post("/predict/")
+async def predict(file: UploadFile = File(...)):#file: UploadFile = File(...)):
+    try:
+        #image_path = r"C:\Users\bappa\Downloads\Lung-and-Colon-Detection-Model-Website\backend\test_lung_cancer_file.jpeg"
+        #image_path = r'C:\Users\bappa\Downloads\Lung-and-Colon-Detection-Model-Website\backend\lung_colon_model.pth'
+        # Load and preprocess image
+        
+        # Preprocess
+        #image_tensor = transform(image).unsqueeze(0)  # [1, 3, 224, 224]
+        image_bytes = await file.read()
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        image_tensor = transform(image).unsqueeze(0)
 
-    # Preprocess & predict
-    image_tensor = preprocess_image(file_path)
-    predicted_class, confidence = predict_image(model, image_tensor)
+        with torch.no_grad():
+            outputs = model(image_tensor)
+            predicted_class = torch.argmax(outputs, dim=1).item()
+            probabilities = torch.nn.functional.softmax(outputs, dim=1)
+            confidence = probabilities[0][predicted_class].item() * 100  # convert to %
 
-    # Clean up
-    os.remove(file_path)
+        cancers = ['colon_aca', 'colon_n', 'lung_aca', 'lung_n', 'lung_scc']
+        
 
-    return {
-        "class": predicted_class,
-        "confidence": confidence
-    }
+
+        return {"prediction": cancers[predicted_class], "confidence": confidence}
+
+    except Exception as e:
+        return {"error": str(e)}
+    
+if __name__ == "__main__":
+    # Safe to run this only when script is executed directly
+    import requests
+
+    url = "http://127.0.0.1:8000/predict"
+    files = {'file': open("test_image.jpg", "rb")}
+    response = requests.post(url, files=files)
+    print(response.json())

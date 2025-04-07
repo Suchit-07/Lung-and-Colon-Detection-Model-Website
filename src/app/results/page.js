@@ -1,13 +1,32 @@
-import Link from "next/link"
+"use client";
 
+import Link from "next/link"
+import React, { useState, useEffect } from 'react';
 export default function ResultsPage() {
   // Mock results - in a real app, these would come from API/props
-  const results = {
-    lungCancerChance: 12,
-    colonCancerChance: 8,
-    scanDate: new Date().toLocaleDateString(),
-  }
+  
+  const [result, setResult] = useState(null);
 
+  useEffect(() => {
+    const storedResult = localStorage.getItem("prediction");
+    if (storedResult) {
+      setResult(JSON.parse(storedResult));
+    }
+  }, []);
+
+  if (!result) return <p>Loading...</p>;
+
+  return (
+    <div className="text-white p-6">
+      <h1 className="text-3xl mb-4">Prediction Results</h1>
+      <p className="text-xl">Class: {result.prediction}</p>
+      <p className="text-xl">Confidence: {(result.confidence * 100).toFixed(2)}%</p>
+    </div>
+  );
+
+
+
+  /* ts DOES NOT work pls fix
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       <nav className="w-full p-4 flex justify-between items-center">
@@ -97,6 +116,6 @@ export default function ResultsPage() {
         *Results may be inaccurate. Please contact a medical professional for a complete diagnosis.
       </footer>
     </div>
-  )
+  )*/
 }
 
