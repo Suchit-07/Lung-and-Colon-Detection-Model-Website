@@ -9,6 +9,8 @@ import io
 # Initialize FastAPI
 app = FastAPI()
 #copy file path of attached pth file
+#to run, type uvicorn backend.main:app --reload on console
+#then go to 127.0.0.1:8000/docs, click try it out, and then put the image file in to get classification and confidence score
 MODEL_PATH = 'PUT MODEL PATH HERE'
 model = load_model(MODEL_PATH)
 
