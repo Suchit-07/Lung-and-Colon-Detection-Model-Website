@@ -24,9 +24,6 @@ transform = transforms.Compose([
 @app.post("/predict/")
 async def predict(file: UploadFile = File(...)):#file: UploadFile = File(...)):
     try:
-        #image_path = r"C:\Users\bappa\Downloads\Lung-and-Colon-Detection-Model-Website\backend\test_lung_cancer_file.jpeg"
-        #image_path = r'C:\Users\bappa\Downloads\Lung-and-Colon-Detection-Model-Website\backend\lung_colon_model.pth'
-        # Load and preprocess image
         
         # Preprocess
         #image_tensor = transform(image).unsqueeze(0)  # [1, 3, 224, 224]
