@@ -60,12 +60,8 @@ export default function DetectPage() {
   const handleCameraCapture = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-      // In a real implementation, you would capture the image from the stream
-      // This is a placeholder to simulate taking a photo
       setTimeout(() => {
-        // Simulating a captured image with a placeholder
         setPreviewImage("/api/placeholder/640/480")
-        // Clean up the stream
         stream.getTracks().forEach(track => track.stop())
       }, 500)
     } catch (err) {

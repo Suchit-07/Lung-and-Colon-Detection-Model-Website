@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { auth } from "@/firebase"; // Adjust path to your firebase config
+import { auth } from "@/firebase"; 
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -20,10 +20,10 @@ export default function LoginPage() {
     }
 
     try {
-      // Authenticate with Firebase
+      
       await signInWithEmailAndPassword(auth, email, password);
       console.log("Login successful!");
-      router.push("/detect"); // Redirect user to dashboard
+      router.push("/detect"); 
     } catch (err) {
       console.error("Login Error:", err.message);
       setError("Invalid credentials. Please try again.");

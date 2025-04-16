@@ -1,10 +1,8 @@
-# model.py
 import torch
 import torch.nn as nn
 from torchvision import models, transforms
 from PIL import Image
 
-# Define the attention layer
 class AttentionLayer(nn.Module):
     def __init__(self, in_channels):
         super(AttentionLayer, self).__init__()
@@ -25,11 +23,9 @@ class AttentionLayer(nn.Module):
         out = out.view(batch_size, C, width, height)
         return out + x
 
-# Define the main model
 class ResNetWithAttention(nn.Module):
     def __init__(self):
         super(ResNetWithAttention, self).__init__()
-        # Define directly
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
@@ -61,7 +57,7 @@ class ResNetWithAttention(nn.Module):
         x = torch.flatten(x, 1)
         x = self.fc(x)
         return x
-# Image transforms (must match training preprocessing)
+
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
@@ -87,7 +83,7 @@ def predict(model, image_path):
 
     probabilities = torch.nn.functional.softmax(output, dim=1)
     predicted_class = torch.argmax(probabilities, dim=1).item()
-    confidence = probabilities[0][predicted_class].item() * 100  # convert to %
+    confidence = probabilities[0][predicted_class].item() * 100  
 
     
     return prediction

@@ -5,29 +5,38 @@ from fastapi import FastAPI, File, UploadFile
 from PIL import Image
 from .model import load_model
 import io
+from fastapi.middleware.cors import CORSMiddleware
 
-# Initialize FastAPI
+
 app = FastAPI()
-#copy file path of attached pth file
-#to run, type uvicorn backend.main:app --reload on console
-#then go to 127.0.0.1:8000/docs, click try it out, and then put the image file in to get classification and confidence score
-MODEL_PATH = 'PUT MODEL PATH HERE'
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:8000", "*"],  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+#copy file path of attached pth file and put into MODEL_PATH
+#first setup the backend, open a new console and type "uvicorn backend.main:app --reload"
+#after setting that up, open another new console (you should have two by this point) and type "npm run dev"
+#run it on localhost:3000 
+#text me if you have issues
+MODEL_PATH = r'C:\Users\bappa\Downloads\Lung-and-Colon-Detection-Model-Website\backend\lung_colon_model.pth'
 model = load_model(MODEL_PATH)
 
-# Define image transformations (must match training preprocessing)
 transform = transforms.Compose([
-    transforms.Resize((224, 224)),  # Resize to (224, 224), or whatever size your model expects
-    transforms.ToTensor(),  # Convert the image to a tensor
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize if needed (for pretrained models)
+    transforms.Resize((224, 224)),  
+    transforms.ToTensor(),  
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  
 ])
 
 
-# API endpoint to process image
+
 @app.post("/predict/")
-async def predict(file: UploadFile = File(...)):#file: UploadFile = File(...)):
+async def predict(file: UploadFile = File(...)):
     try:
-        
-        # Preprocess
         #image_tensor = transform(image).unsqueeze(0)  # [1, 3, 224, 224]
         image_bytes = await file.read()
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
