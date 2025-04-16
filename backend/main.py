@@ -23,7 +23,7 @@ app.add_middleware(
 #after setting that up, open another new console (you should have two by this point) and type "npm run dev"
 #run it on localhost:3000 
 #text me if you have issues
-MODEL_PATH = r'C:\Users\bappa\Downloads\Lung-and-Colon-Detection-Model-Website\backend\lung_colon_model.pth'
+MODEL_PATH = 'COPY YOUR FILE PATH HERE'
 model = load_model(MODEL_PATH)
 
 transform = transforms.Compose([
